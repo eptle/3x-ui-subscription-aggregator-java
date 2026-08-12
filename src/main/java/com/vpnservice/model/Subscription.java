@@ -27,7 +27,7 @@ public class Subscription {
     @ManyToOne
     private Server server;
 
-    private String subUrl;      // финальная ссылка для happ/v2ray
+    private String subUrl;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

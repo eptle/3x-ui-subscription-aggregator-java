@@ -18,9 +18,9 @@ public class Server {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;        // например "VPS Frankfurt"
+    private String name;
     private String subPort;
-    private String xuiIp;     // https://your-vps.com
+    private String xuiIp;
     private String xuiPort;
     private String xuiLogin;
     private String xuiPassword;
