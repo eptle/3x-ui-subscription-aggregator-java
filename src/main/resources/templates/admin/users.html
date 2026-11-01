@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head th:replace="~{admin/layout :: head('Пользователи')}"></head>
+<body>
+<nav th:replace="~{admin/layout :: nav('users')}"></nav>
+
+<main class="container">
+
+    <article th:if="${error}" class="fail" th:text="${error}"></article>
+
+    <!-- Только что созданный юзер -->
+    <article th:if="${created}">
+        <header>
+            <strong th:text="'Создан ' + ${created.name}"></strong>
+        </header>
+        <p>Ссылка на подписку:</p>
+        <div class="row-actions">
+            <input type="text" readonly class="link" th:value="${createdUrl}" onclick="this.select()">
+            <button type="button" th:data-url="${createdUrl}" onclick="copyLink(this)">Скопировать</button>
+            <button type="button" class="secondary" th:data-url="${createdUrl}" th:data-name="${created.name}"
+                    onclick="showQr(this)">QR</button>
+        </div>
+        <details>
+            <summary>Результат по inbound'ам</summary>
+            <table th:replace="~{admin/layout :: results(${created.results})}"></table>
+        </details>
+    </article>
+
+    <article th:if="${deleteResult}">
+        <p th:if="${deleteResult.deleted}" class="ok" th:text="'Юзер ' + ${deleteResult.name} + ' удалён'"></p>
+        <p th:unless="${deleteResult.deleted}" class="fail"
+           th:text="'Юзер ' + ${deleteResult.name} + ' остался в базе: не со всех серверов удалось удалить клиентов. Исправь ошибку и удали ещё раз'"></p>
+        <!-- th:replace выполняется раньше th:if, поэтому условие на отдельном блоке -->
+        <th:block th:if="${!deleteResult.results.isEmpty()}">
+            <table th:replace="~{admin/layout :: results(${deleteResult.results})}"></table>
+        </th:block>
+    </article>
+
+    <article th:if="${syncResult}">
+        <header><strong>Синхронизация</strong></header>
+        <p th:if="${syncResult.added.isEmpty() and syncResult.unreachable.isEmpty()}" class="ok">
+            Всё уже на месте, добавлять нечего
+        </p>
+        <th:block th:each="entry : ${syncResult.added}">
+            <h6 th:text="${entry.key}"></h6>
+            <table th:replace="~{admin/layout :: results(${entry.value})}"></table>
+        </th:block>
+        <th:block th:if="${!syncResult.unreachable.isEmpty()}">
+            <h6>Недоступные серверы</h6>
+            <table th:replace="~{admin/layout :: results(${syncResult.unreachable})}"></table>
+        </th:block>
+    </article>
+
+    <details>
+        <summary role="button">Новый пользователь</summary>
+        <form th:action="@{/admin/users}" method="post">
+            <div class="grid">
+                <label>Имя
+                    <input name="name" required pattern="[A-Za-z0-9_-]{1,32}" placeholder="vasya"
+                           title="Латиница, цифры, _ и -, до 32 символов">
+                </label>
+                <label>Трафик, ГБ
+                    <input name="totalGb" type="number" min="0" value="0" required>
+                    <small>0 — без лимита</small>
+                </label>
+                <label>Срок, дней
+                    <input name="expiryDays" type="number" min="0" value="0" required>
+                    <small>0 — бессрочно</small>
+                </label>
+                <label>Устройств (IP)
+                    <input name="limitIp" type="number" min="0" value="0" required>
+                    <small>0 — без лимита</small>
+                </label>
+            </div>
+            <button type="submit">Создать на всех серверах</button>
+        </form>
+    </details>
+
+    <div class="row-actions" style="justify-content: space-between; align-items: center">
+        <h3 style="margin: 0">Пользователи</h3>
+        <form th:action="@{/admin/sync}" method="post" style="margin: 0">
+            <button type="submit" class="secondary"
+                    title="Досоздать клиентов на новых серверах и в новых inbound'ах">Синхронизировать</button>
+        </form>
+    </div>
+
+    <div class="overflow-auto">
+        <table class="striped">
+            <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Серверов</th>
+                <th>Трафик</th>
+                <th>До</th>
+                <th>Создан</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${users.isEmpty()}">
+                <td colspan="6">Пока никого нет</td>
+            </tr>
+            <tr th:each="u : ${users}">
+                <td><strong th:text="${u.name}"></strong></td>
+                <td th:text="${u.servers}" th:classappend="${u.servers == 0} ? 'fail'"
+                    th:title="${u.servers == 0} ? 'Подписка пустая: клиентов нет или серверы ещё не опрошены' : null"></td>
+                <td th:text="${u.traffic}"></td>
+                <td th:text="${u.expire}"></td>
+                <td th:text="${u.created}"></td>
+                <td>
+                    <div class="row-actions">
+                        <button type="button" th:data-url="${u.url}" onclick="copyLink(this)">Ссылка</button>
+                        <button type="button" class="secondary" th:data-url="${u.url}" th:data-name="${u.name}"
+                                onclick="showQr(this)">QR</button>
+                        <form th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post"
+                              th:data-name="${u.name}"
+                              onsubmit="return confirm('Удалить ' + this.dataset.name + ' со всех серверов?')">
+                            <button type="submit" class="secondary outline">Удалить</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<dialog id="qr-dialog">
+    <article>
+        <header>
+            <button aria-label="Закрыть" rel="prev" onclick="this.closest('dialog').close()"></button>
+            <strong id="qr-title"></strong>
+        </header>
+        <div id="qr-box"></div>
+        <p class="link" id="qr-url"></p>
+    </article>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    // Буфер обмена браузер даёт только на https и localhost, иначе показываем ссылку для ручного копирования
+    function copyLink(button) {
+        const url = button.dataset.url;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(() => {
+                const text = button.textContent;
+                button.textContent = 'Скопировано';
+                setTimeout(() => button.textContent = text, 1500);
+            });
+        } else {
+            prompt('Скопируй ссылку', url);
+        }
+    }
+
+    function showQr(button) {
+        const box = document.getElementById('qr-box');
+        box.innerHTML = '';
+        new QRCode(box, {text: button.dataset.url, width: 280, height: 280});
+        document.getElementById('qr-title').textContent = button.dataset.name;
+        document.getElementById('qr-url').textContent = button.dataset.url;
+        document.getElementById('qr-dialog').showModal();
+    }
+</script>
+</body>
+</html>

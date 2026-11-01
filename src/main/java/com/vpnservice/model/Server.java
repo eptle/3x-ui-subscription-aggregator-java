@@ -18,11 +18,23 @@ public class Server {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String subPort;
-    private String xuiIp;
-    private String xuiPort;
-    private String xuiLogin;
-    private String xuiPassword;
+    // Название для remarks в подписке, например "🇩🇪 wurst"
+    @Column(nullable = false)
+    private String displayName;
+
+    // Адрес панели вместе со схемой и webBasePath: https://1.2.3.4:2053/randompath
+    @Column(nullable = false)
+    private String panelUrl;
+
+    private String panelLogin;
+    private String panelPassword;
+
+    // Адрес, который получают клиенты (домен), если у inbound нет externalProxy
+    @Column(nullable = false)
+    private String publicHost;
+
+    private int sortOrder;
+
+    @Builder.Default
     private boolean active = true;
 }

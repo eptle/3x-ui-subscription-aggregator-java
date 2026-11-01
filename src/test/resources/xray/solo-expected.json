@@ -1,0 +1,208 @@
+{
+  "remarks": "🇩🇪 wurst (авто)",
+  "log": {
+    "loglevel": "warning"
+  },
+  "dns": {
+    "servers": [
+      "https://1.1.1.1/dns-query",
+      {
+        "address": "77.88.8.8",
+        "domains": [
+          "geosite:category-ru"
+        ],
+        "skipFallback": true
+      }
+    ],
+    "queryStrategy": "UseIPv4"
+  },
+  "inbounds": [
+    {
+      "tag": "socks",
+      "listen": "127.0.0.1",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "routeOnly": true
+      }
+    },
+    {
+      "tag": "http",
+      "listen": "127.0.0.1",
+      "port": 10809,
+      "protocol": "http",
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "routeOnly": true
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "r-wurst",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "wurst.whiteman.pics",
+            "port": 443,
+            "users": [
+              {
+                "id": "1589ea67-9126-4e87-921e-cbd51c644091",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "wurst.whiteman.pics",
+          "fingerprint": "firefox",
+          "publicKey": "o8SFUpRQd4rP0itKveQTjHtj8uu_f-8D3aHPI-kcdS0",
+          "shortId": "8daa",
+          "spiderX": "/"
+        },
+        "xhttpSettings": {
+          "path": "/assets/x7k2",
+          "mode": "auto",
+          "extra": {
+            "xmux": {
+              "maxConnections": 1,
+              "hMaxRequestTimes": "600-900",
+              "hMaxReusableSecs": "1800-3000"
+            }
+          }
+        }
+      }
+    },
+    {
+      "tag": "c-wurst",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "cdn-wurst.whiteman.pics",
+            "port": 443,
+            "users": [
+              {
+                "id": "f4216108-e94f-4281-8641-0389b2e689d2",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "tls",
+        "tlsSettings": {
+          "serverName": "cdn-wurst.whiteman.pics",
+          "fingerprint": "firefox",
+          "alpn": [
+            "h2"
+          ]
+        },
+        "xhttpSettings": {
+          "host": "cdn-wurst.whiteman.pics",
+          "path": "/static/k3p9",
+          "mode": "packet-up",
+          "extra": {
+            "xmux": {
+              "maxConnections": 1,
+              "hMaxRequestTimes": "600-900",
+              "hMaxReusableSecs": "1800-3000"
+            }
+          }
+        }
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom"
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole"
+    }
+  ],
+  "observatory": {
+    "subjectSelector": [
+      "r-",
+      "c-"
+    ],
+    "probeUrl": "https://www.gstatic.com/generate_204",
+    "probeInterval": "1m",
+    "enableConcurrency": true
+  },
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "balancers": [
+      {
+        "tag": "auto",
+        "selector": [
+          "r-",
+          "c-"
+        ],
+        "strategy": {
+          "type": "leastPing"
+        },
+        "fallbackTag": "c-wurst"
+      }
+    ],
+    "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:category-ru"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "geoip:ru"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "network": "tcp,udp",
+        "balancerTag": "auto"
+      }
+    ]
+  }
+}

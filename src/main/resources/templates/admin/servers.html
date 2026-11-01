@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head th:replace="~{admin/layout :: head('Серверы')}"></head>
+<body>
+<nav th:replace="~{admin/layout :: nav('servers')}"></nav>
+
+<main class="container">
+
+    <article th:if="${message}" th:text="${message}"></article>
+
+    <h3>Серверы</h3>
+    <div class="overflow-auto">
+        <table class="striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Название</th>
+                <th>Панель</th>
+                <th>Адрес для клиентов</th>
+                <th>Статус</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${servers.isEmpty()}">
+                <td colspan="6">Серверов пока нет, добавь первый ниже</td>
+            </tr>
+            <tr th:each="row : ${servers}" th:with="s=${row.server}">
+                <td th:text="${s.sortOrder}"></td>
+                <td><strong th:text="${s.displayName}"></strong></td>
+                <td class="link" th:text="${s.panelUrl}"></td>
+                <td th:text="${s.publicHost}"></td>
+                <td>
+                    <span th:unless="${s.active}">выключен</span>
+                    <th:block th:if="${s.active}">
+                        <span th:if="${row.error}" class="fail" th:text="${row.error}"></span>
+                        <br th:if="${row.error != null and row.fetchedAt != null}">
+                        <span th:if="${row.fetchedAt}" th:classappend="${row.error} ? '' : 'ok'"
+                              th:text="${row.inbounds} + ' inbound(ов), снимок от ' + ${row.fetchedAt}"></span>
+                        <span th:if="${row.error == null and row.fetchedAt == null}">ещё не опрошен</span>
+                    </th:block>
+                </td>
+                <td>
+                    <div class="row-actions">
+                        <a role="button" class="secondary" th:href="@{/admin/servers(edit=${s.id})}">Изменить</a>
+                        <form th:action="@{/admin/servers/{id}/delete(id=${s.id})}" method="post"
+                              th:data-name="${s.displayName}"
+                              onsubmit="return confirm('Убрать ' + this.dataset.name + ' из агрегатора? Клиенты на панели останутся')">
+                            <button type="submit" class="secondary outline">Удалить</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <article>
+        <header>
+            <strong th:text="${form.id == null} ? 'Новый сервер' : 'Изменить: ' + ${form.displayName}"></strong>
+        </header>
+        <form th:action="@{/admin/servers}" th:object="${form}" method="post">
+            <input type="hidden" th:field="*{id}">
+            <div class="grid">
+                <label>Название
+                    <input th:field="*{displayName}" required placeholder="🇩🇪 wurst">
+                    <small>Так сервер называется в приложении</small>
+                </label>
+                <label>Порядок
+                    <input th:field="*{sortOrder}" type="number" required>
+                    <small>Меньше — выше в списке</small>
+                </label>
+            </div>
+            <label>Адрес панели
+                <input th:field="*{panelUrl}" type="url" required placeholder="https://wurst.example.com/secretpath">
+                <small>Со схемой, портом и webBasePath, как открываешь в браузере</small>
+            </label>
+            <div class="grid">
+                <label>Логин панели
+                    <input th:field="*{panelLogin}" autocomplete="off">
+                </label>
+                <label>Пароль панели
+                    <input th:field="*{panelPassword}" type="password" autocomplete="new-password"
+                           th:placeholder="${form.id == null} ? '' : 'не менять'">
+                </label>
+            </div>
+            <label>Адрес для клиентов
+                <input th:field="*{publicHost}" required placeholder="wurst.example.com">
+                <small>Домен или IP, который попадёт в конфиг, если у inbound'а нет External Proxy</small>
+            </label>
+            <label>
+                <input th:field="*{active}" type="checkbox" role="switch">
+                Активен
+            </label>
+            <div class="row-actions">
+                <button type="submit">Сохранить</button>
+                <a th:if="${form.id != null}" role="button" class="secondary outline" href="/admin/servers">Отмена</a>
+            </div>
+            <small>После сохранения агрегатор сразу попробует зайти в панель. Чтобы раздать клиентов на новый сервер,
+                нажми «Синхронизировать» на странице пользователей</small>
+        </form>
+    </article>
+</main>
+</body>
+</html>

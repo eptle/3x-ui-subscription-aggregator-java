@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- Общие куски страниц: подключаются через th:replace -->
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' · VPN-агрегатор'">VPN-агрегатор</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css">
+    <style>
+        body > main { max-width: 1200px; }
+        table { font-size: 0.9rem; }
+        td form, td a[role=button] { margin: 0; display: inline-block; }
+        td button, td a[role=button] { padding: 0.25rem 0.6rem; font-size: 0.85rem; margin: 0; }
+        .link { font-family: monospace; font-size: 0.8rem; word-break: break-all; }
+        .ok { color: var(--pico-ins-color); }
+        .fail { color: var(--pico-del-color); }
+        .row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        #qr-box { display: flex; justify-content: center; padding: 1rem; background: #fff; }
+    </style>
+</head>
+<body>
+
+<nav th:fragment="nav(active)" class="container">
+    <ul>
+        <li><strong>VPN-агрегатор</strong></li>
+    </ul>
+    <ul>
+        <li><a href="/admin/users" th:attr="aria-current=${active == 'users'} ? 'page' : null">Пользователи</a></li>
+        <li><a href="/admin/servers" th:attr="aria-current=${active == 'servers'} ? 'page' : null">Серверы</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="margin: 0">
+                <button type="submit" class="secondary outline">Выйти</button>
+            </form>
+        </li>
+    </ul>
+</nav>
+
+<!-- Таблица результатов по inbound'ам: create-client, sync, удаление -->
+<table th:fragment="results(items)">
+    <thead>
+    <tr><th>Сервер</th><th>Inbound</th><th>Результат</th></tr>
+    </thead>
+    <tbody>
+    <tr th:each="r : ${items}">
+        <td th:text="${r.server}"></td>
+        <td th:text="${r.inboundId == null ? '—' : r.inboundId + ' ' + (r.remark ?: '')}"></td>
+        <td th:if="${r.ok}" class="ok">ок</td>
+        <td th:unless="${r.ok}" class="fail" th:text="${r.error}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

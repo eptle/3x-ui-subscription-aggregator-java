@@ -23,9 +23,15 @@ public class User {
 
     private String name;
 
+    // Секрет в ссылке подписки: /sub/{token}
     @Column(unique = true, nullable = false)
     private String token;
 
+    // subId клиента в 3x-ui, по нему клиенты юзера ищутся на всех панелях
+    @Column(unique = true, nullable = false)
+    private String subId;
+
+    @Builder.Default
     private boolean active = true;
 
     @CreationTimestamp

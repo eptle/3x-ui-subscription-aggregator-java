@@ -1,0 +1,57 @@
+{
+    "success": true,
+    "msg": "",
+    "obj": [
+        {
+            "id": 1,
+            "up": 0,
+            "down": 0,
+            "total": 0,
+            "allTime": 0,
+            "remark": "",
+            "enable": true,
+            "expiryTime": 0,
+            "trafficReset": "never",
+            "lastTrafficResetTime": 0,
+            "clientStats": [
+                {
+                    "id": 1,
+                    "inboundId": 1,
+                    "enable": false,
+                    "email": "aadsykn0",
+                    "uuid": "1c6079e6-5342-47fa-a9f0-1188bf4e2ef6",
+                    "subId": "dff4pajow34ymeiv",
+                    "up": 0,
+                    "down": 0,
+                    "allTime": 0,
+                    "expiryTime": 0,
+                    "total": 0,
+                    "reset": 0,
+                    "lastOnline": 0
+                },
+                {
+                    "id": 2,
+                    "inboundId": 1,
+                    "enable": true,
+                    "email": "cle5b4n7",
+                    "uuid": "c29c95e2-9c76-44c3-ba3d-ad57eba215b0",
+                    "subId": "zx95rirylinj93e4",
+                    "up": 0,
+                    "down": 0,
+                    "allTime": 0,
+                    "expiryTime": 0,
+                    "total": 0,
+                    "reset": 0,
+                    "lastOnline": 0
+                }
+            ],
+            "listen": "",
+            "port": 30886,
+            "protocol": "vless",
+            "settings": "{\n  \"clients\": [\n    {\n      \"comment\": \"\",\n      \"created_at\": 1758532912000,\n      \"email\": \"aadsykn0\",\n      \"enable\": false,\n      \"expiryTime\": 0,\n      \"flow\": \"\",\n      \"id\": \"1c6079e6-5342-47fa-a9f0-1188bf4e2ef6\",\n      \"limitIp\": 0,\n      \"reset\": 0,\n      \"subId\": \"dff4pajow34ymeiv\",\n      \"tgId\": 0,\n      \"totalGB\": 0,\n      \"updated_at\": 1758620508000\n    },\n    {\n      \"comment\": \"\",\n      \"created_at\": 1758620950000,\n      \"email\": \"cle5b4n7\",\n      \"enable\": true,\n      \"expiryTime\": 0,\n      \"flow\": \"\",\n      \"id\": \"c29c95e2-9c76-44c3-ba3d-ad57eba215b0\",\n      \"limitIp\": 0,\n      \"reset\": 0,\n      \"subId\": \"zx95rirylinj93e4\",\n      \"tgId\": \"\",\n      \"totalGB\": 0,\n      \"updated_at\": 1758620950000\n    }\n  ],\n  \"decryption\": \"none\",\n  \"encryption\": \"none\"\n}",
+            "streamSettings": "{\n  \"network\": \"tcp\",\n  \"security\": \"none\",\n  \"externalProxy\": [],\n  \"tcpSettings\": {\n    \"acceptProxyProtocol\": false,\n    \"header\": {\n      \"type\": \"none\"\n    }\n  }\n}",
+            "tag": "inbound-30886",
+            "sniffing": "{\n  \"enabled\": false,\n  \"destOverride\": [\n    \"http\",\n    \"tls\",\n    \"quic\",\n    \"fakedns\"\n  ],\n  \"metadataOnly\": false,\n  \"routeOnly\": false\n}"
+        }
+    ]
+}

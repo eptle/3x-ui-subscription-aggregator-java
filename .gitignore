@@ -34,3 +34,8 @@ build/
 
 .env
 application.properties
+*.db
+
+ansible v2/*
+*-config-example.json
+3X-UI.postman_collection.json

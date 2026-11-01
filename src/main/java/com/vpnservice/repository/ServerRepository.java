@@ -11,4 +11,7 @@ public interface ServerRepository extends JpaRepository<Server, Long> {
 
     // SELECT * FROM servers WHERE active = true
     List<Server> findByActiveTrue();
+
+    // Порядок серверов в подписке
+    List<Server> findByActiveTrueOrderBySortOrderAscIdAsc();
 }

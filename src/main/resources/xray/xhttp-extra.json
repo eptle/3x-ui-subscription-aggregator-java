@@ -1,0 +1,7 @@
+{
+  "xmux": {
+    "maxConnections": 1,
+    "hMaxRequestTimes": "600-900",
+    "hMaxReusableSecs": "1800-3000"
+  }
+}
