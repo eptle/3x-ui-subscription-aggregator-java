@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ServerRepository extends JpaRepository<Server, Long> {
@@ -14,4 +15,6 @@ public interface ServerRepository extends JpaRepository<Server, Long> {
 
     // Порядок серверов в подписке
     List<Server> findByActiveTrueOrderBySortOrderAscIdAsc();
+
+    Optional<Server> findByPublicHost(String publicHost);
 }

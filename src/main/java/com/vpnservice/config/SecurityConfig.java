@@ -22,7 +22,8 @@ public class SecurityConfig {
                 // REST-ручки зовутся curl'ом с Basic-авторизацией, без браузерной сессии CSRF-токен им не нужен
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults())
+                // На проде корень домена отдаёт nginx (обычный сайт), поэтому после входа идём в админку, а не на /
+                .formLogin(form -> form.defaultSuccessUrl("/admin/users"))
                 .build();
     }
 }

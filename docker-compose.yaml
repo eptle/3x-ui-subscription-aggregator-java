@@ -1,0 +1,15 @@
+services:
+  app:
+    # Образ собирает GitHub Actions (.github/workflows/docker.yml): на сервере с 1 ГБ RAM maven не собрать.
+    # Локально собрать вместо скачивания: docker build -t ghcr.io/eptle/3x-ui-subscription-aggregator-java .
+    image: ghcr.io/eptle/3x-ui-subscription-aggregator-java:${AGGREGATOR_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    # Потолок памяти: при утечке ядро убьёт агрегатор, а не Xray
+    mem_limit: 400m
+    # Только localhost: снаружи приложение доступно через nginx с HTTPS
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+    # Здесь лежит vpnservice.db. Владелец каталога должен быть uid 10001 (пользователь app в контейнере)
+    volumes:
+      - ./data:/data

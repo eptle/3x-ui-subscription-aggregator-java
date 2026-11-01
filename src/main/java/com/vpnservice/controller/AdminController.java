@@ -1,5 +1,8 @@
 package com.vpnservice.controller;
 
+import com.vpnservice.service.ServerService;
+import com.vpnservice.service.ServerService.ServerRequest;
+import com.vpnservice.service.ServerService.UpsertResult;
 import com.vpnservice.service.UserService;
 import com.vpnservice.service.UserService.CreateClientRequest;
 import com.vpnservice.service.UserService.CreateClientResult;
@@ -9,6 +12,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,10 +24,16 @@ import org.springframework.web.server.ResponseStatusException;
 public class AdminController {
 
     private final UserService userService;
+    private final ServerService serverService;
 
     @PostMapping("/create-client")
     public CreateClientResult createClient(@RequestBody CreateClientRequest request) {
         return userService.createClient(request);
+    }
+
+    @PutMapping("/servers")
+    public UpsertResult upsertServer(@RequestBody ServerRequest request) {
+        return serverService.upsert(request);
     }
 
     @PostMapping("/sync-clients")

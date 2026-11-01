@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,7 +43,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.jpa.database-platform=org.hibernate.community.dialect.SQLiteDialect",
         // не create: в Hibernate 7.2 он создаёт в SQLite колонку id без типа, и id остаются NULL
         "spring.jpa.hibernate.ddl-auto=update",
-        "aggregator.refresh-interval=1h"
+        "aggregator.refresh-interval=1h",
+        "spring.security.user.name=admin",
+        "spring.security.user.password=test-pass"
 })
 @AutoConfigureMockMvc
 @WithMockUser
@@ -73,6 +76,14 @@ class AdminPageControllerTest {
         mvc.perform(get("/sub/whatever")).andExpect(status().isNotFound());
         // /error открыт, иначе Security запоминает его и после логина отправляет на /error?continue
         mvc.perform(get("/error").accept(MediaType.TEXT_HTML)).andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void loginWithoutSavedPageGoesToAdmin() throws Exception {
+        // На проде корень домена отдаёт nginx, поэтому после входа нельзя уходить на /
+        mvc.perform(formLogin().user("admin").password("test-pass")).andExpect(redirectedUrl("/admin/users"));
+        mvc.perform(formLogin().user("admin").password("wrong")).andExpect(redirectedUrl("/login?error"));
     }
 
     @Test
