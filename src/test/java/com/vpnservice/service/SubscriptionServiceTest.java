@@ -8,6 +8,7 @@ import com.vpnservice.service.SubscriptionService.SubscriptionContent;
 import com.vpnservice.snapshot.ServerSnapshot;
 import com.vpnservice.snapshot.SnapshotService;
 import com.vpnservice.xray.OutboundFactory;
+import com.vpnservice.xray.ShareLinkFactory;
 import com.vpnservice.xray.XrayConfigAssembler;
 import com.vpnservice.xui.Inbound;
 import com.vpnservice.xui.dto.InboundSettings;
@@ -39,7 +40,7 @@ class SubscriptionServiceTest {
     private final ServerRepository serverRepository = mock(ServerRepository.class);
     private final SnapshotService snapshotService = mock(SnapshotService.class);
     private final SubscriptionService service = new SubscriptionService(userRepository, serverRepository, snapshotService,
-            new OutboundFactory(MAPPER, PROPERTIES), new XrayConfigAssembler(MAPPER));
+            new OutboundFactory(MAPPER, PROPERTIES), new XrayConfigAssembler(MAPPER), new ShareLinkFactory(MAPPER));
 
     private final Server wurst = server(1, "🇩🇪 wurst", "wurst.whiteman.pics");
     private final Server node2 = server(2, "🇳🇱 node2", "node2.example.com");
@@ -72,7 +73,7 @@ class SubscriptionServiceTest {
         SubscriptionContent content = service.build("secret").orElseThrow();
 
         assertThat(content.configs()).extracting(c -> c.path("remarks").asString())
-                .containsExactly("⚡ Авто (все ноды)", "🇩🇪 wurst (авто)", "🇳🇱 node2 (авто)");
+                .containsExactly("⚡ Авто (все ноды)", "🇩🇪 wurst", "🇳🇱 node2");
 
         JsonNode auto = content.configs().getFirst();
         assertThat(tags(auto)).containsExactly("r-wurst", "c-wurst", "r-node2", "direct", "block");
@@ -81,6 +82,16 @@ class SubscriptionServiceTest {
         JsonNode node2Config = content.configs().get(2);
         assertThat(tags(node2Config)).containsExactly("r-node2", "direct", "block");
         assertThat(node2Config.path("routing").path("balancers").get(0).path("fallbackTag").asString()).isEqualTo("r-node2");
+    }
+
+    @Test
+    void linksContainOnlyRealityOutbounds() {
+        SubscriptionContent content = service.build("secret").orElseThrow();
+
+        // CDN-выход wurst и выключенный клиент node2 в ссылки не попадают
+        assertThat(content.links()).hasSize(2);
+        assertThat(content.links().get(0)).startsWith("vless://w-r@wurst.whiteman.pics:443?").endsWith("#%F0%9F%87%A9%F0%9F%87%AA%20wurst");
+        assertThat(content.links().get(1)).startsWith("vless://n-r@node2.example.com:443?");
     }
 
     @Test

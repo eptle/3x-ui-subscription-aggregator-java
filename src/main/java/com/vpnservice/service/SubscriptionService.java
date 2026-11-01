@@ -7,6 +7,7 @@ import com.vpnservice.repository.UserRepository;
 import com.vpnservice.snapshot.ServerSnapshot;
 import com.vpnservice.snapshot.SnapshotService;
 import com.vpnservice.xray.OutboundFactory;
+import com.vpnservice.xray.ShareLinkFactory;
 import com.vpnservice.xray.TagAllocator;
 import com.vpnservice.xray.XrayConfigAssembler;
 import com.vpnservice.xui.Inbound;
@@ -29,6 +30,7 @@ public class SubscriptionService {
     private final SnapshotService snapshotService;
     private final OutboundFactory outboundFactory;
     private final XrayConfigAssembler configAssembler;
+    private final ShareLinkFactory shareLinkFactory;
 
     public Optional<SubscriptionContent> build(String token) {
         return userRepository.findByToken(token)
@@ -40,6 +42,7 @@ public class SubscriptionService {
         TagAllocator tags = new TagAllocator();
         List<ObjectNode> configs = new ArrayList<>();
         List<ObjectNode> allOutbounds = new ArrayList<>();
+        List<String> links = new ArrayList<>();
         List<XuiClientEntry> clients = new ArrayList<>();
         List<XuiClientStat> stats = new ArrayList<>();
 
@@ -67,6 +70,7 @@ public class SubscriptionService {
             if (!outbounds.isEmpty()) {
                 configs.add(configAssembler.solo(server, outbounds));
                 allOutbounds.addAll(outbounds);
+                links.addAll(links(server, outbounds));
             }
         }
 
@@ -74,10 +78,24 @@ public class SubscriptionService {
         if (configs.size() > 1) {
             configs.addFirst(configAssembler.auto(allOutbounds));
         }
-        return new SubscriptionContent(configs, UserInfo.of(clients, stats));
+        return new SubscriptionContent(configs, links, UserInfo.of(clients, stats));
     }
 
-    public record SubscriptionContent(List<ObjectNode> configs, UserInfo userInfo) {
+    // Если у сервера несколько reality-выходов, нумеруем их, чтобы в клиенте имена не совпадали
+    private List<String> links(Server server, List<ObjectNode> outbounds) {
+        List<ObjectNode> reality = outbounds.stream()
+                .filter(outbound -> shareLinkFactory.vlessReality(outbound, "").isPresent())
+                .toList();
+        List<String> links = new ArrayList<>();
+        for (int i = 0; i < reality.size(); i++) {
+            String remark = reality.size() == 1 ? server.getDisplayName() : server.getDisplayName() + " #" + (i + 1);
+            shareLinkFactory.vlessReality(reality.get(i), remark).ifPresent(links::add);
+        }
+        return links;
+    }
+
+    // links: vless:// только reality-выходов, для клиентов без поддержки JSON-конфигов
+    public record SubscriptionContent(List<ObjectNode> configs, List<String> links, UserInfo userInfo) {
     }
 
     // Значение заголовка subscription-userinfo: клиенты показывают трафик и дату окончания

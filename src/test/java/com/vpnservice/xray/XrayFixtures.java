@@ -15,7 +15,7 @@ import java.util.List;
 public final class XrayFixtures {
 
     public static final JsonMapper MAPPER = JsonMapper.builder().build();
-    public static final AggregatorProperties PROPERTIES = new AggregatorProperties("VPN", 12, "firefox", null);
+    public static final AggregatorProperties PROPERTIES = new AggregatorProperties("VPN", 12, "firefox", null, List.of("v2rayng", "throne"));
     public static final String SUB_ID = "wurst-user";
 
     public static final String REALITY_STREAM = """

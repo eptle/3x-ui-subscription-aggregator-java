@@ -3,6 +3,8 @@ package com.vpnservice.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
+import java.util.List;
+
 @ConfigurationProperties("aggregator")
 public record AggregatorProperties(
         // Название подписки в клиенте
@@ -13,5 +15,7 @@ public record AggregatorProperties(
         @DefaultValue("chrome") String defaultFingerprint,
         // Внешний адрес агрегатора для ссылок в админке, например https://chad.whiteman.pics.
         // Не задан: берётся адрес, по которому открыта админка
-        String publicUrl) {
+        String publicUrl,
+        // Подстроки User-Agent (без учёта регистра) клиентов, которым вместо JSON-конфигов нужен список vless://
+        @DefaultValue({"v2rayng", "throne"}) List<String> linkClients) {
 }
